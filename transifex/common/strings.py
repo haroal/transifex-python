@@ -105,7 +105,7 @@ def alt_quote(quote, string):
     return quote
 
 
-class LazyString(object):
+class LazyString(str):
     """Can be used instead of a string instance when delayed evaluation
     is desired.
 
@@ -127,6 +127,10 @@ class LazyString(object):
     foo=44
     """
 
+    def __new__(cls, *args, **kwargs):
+        """Override __new__ to be able to inherit from str."""
+        return super().__new__(cls, '')
+
     def __init__(self, func, *args, **kwargs):
         self._func = func
         self._args = args
@@ -145,7 +149,11 @@ class LazyString(object):
     def _resolved(self):
         """Call the proper text_type wrapper (str() or unicode() depending
         on the Python version) on the resolved value."""
-        return self._text()
+
+        if PY3:
+            return self._text()
+        else:
+            return self._binary()
 
     def __unicode__(self):  # pragma: no cover
         """Resolve the value of the string.
@@ -161,10 +169,12 @@ class LazyString(object):
         Calls the evaluation function together with all parameters.
         """
 
-        if PY3:
-            return self._text()
-        else:
-            return self._binary()
+        return self._resolved
+
+    def __repr__(self):
+        """Reset __repr__ behavior to its default one, as inheriting str has overridden it."""
+
+        return object.__repr__(self)
 
     def __bytes__(self):  # pragma: no cover
         """Resolve the value of the string.

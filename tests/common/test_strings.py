@@ -52,6 +52,7 @@ class TestLazyString(object):
 
     def test_str_functionality(self):
         string = LazyString(lambda x: x * 2, 'foo')
+        assert isinstance(string, str)
         assert string == 'foofoo'
         assert len(string) == len('foofoo')
         assert string[1] == 'o'
